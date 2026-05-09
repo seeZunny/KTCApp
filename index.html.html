@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="สั่งซื้อเสื้อผ้า">
+<title>ระบบสั่งซื้อเสื้อผ้า v2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap');
+:root{
+  --pri:#1a3a5c;--pri2:#2563a8;--acc:#f59e0b;--acc2:#d97706;
+  --ok:#10b981;--err:#ef4444;--warn:#f59e0b;
+  --pvch:#7c3aed;--pvs:#0891b2;
+  --bg:#f0f4f8;--card:#fff;--text:#1e293b;--muted:#64748b;
+  --border:#e2e8f0;--shadow:0 2px 12px rgba(26,58,92,0.10);
+  --r:16px;--rs:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;padding-bottom:72px}
+/* HEADER */
+.hdr{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;padding:14px 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(26,58,92,.25)}
+.hdr h1{font-family:'Prompt',sans-serif;font-size:17px;font-weight:600}
+.hdr p{font-size:11px;opacity:.8;margin-top:2px}
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;border-top:1.5px solid var(--border);z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,.08)}
+.nb{flex:1;padding:9px 4px 7px;background:none;border:none;font-family:'Sarabun',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:.2s}
+.nb.active{color:var(--pri2);font-weight:600}
+.nb .ic{font-size:21px;line-height:1}
+/* SCREENS */
+.scr{display:none;padding:14px}
+.scr.active{display:block}
+/* CARD */
+.card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-title{font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;color:var(--pri);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+/* FORM */
+.fg{margin-bottom:12px}
+.fg:last-child{margin-bottom:0}
+label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px}
+input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'Sarabun',sans-serif;font-size:15px;color:var(--text);background:#fff;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri2);box-shadow:0 0 0 3px rgba(37,99,168,.1)}
+input[readonly]{background:#f8fafc;color:var(--muted)}
+textarea{resize:none;min-height:70px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* LEVEL TABS */
+.ltabs{display:flex;background:var(--border);border-radius:var(--rs);padding:3px;gap:3px;margin-bottom:14px}
+.ltab{flex:1;padding:10px;border:none;border-radius:8px;font-family:'Prompt',sans-serif;font-size:14px;font-weight:500;cursor:pointer;background:transparent;color:var(--muted);transition:.2s}
+.ltab.ap{background:var(--pvch);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,.3)}
+.ltab.as{background:var(--pvs);color:#fff;box-shadow:0 2px 8px rgba(8,145,178,.3)}
+/* ITEM ROWS */
+.isec{display:none}
+.isec.show{display:block}
+.irow{background:#f8fafc;border:1.5px solid var(--border);border-radius:var(--rs);padding:13px;margin-bottom:10px;transition:border-color .2s}
+.irow.has-item{border-color:var(--pri2);background:#f0f6ff}
+.ihdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.iname{font-size:14px;font-weight:600;color:var(--text);flex:1}
+.iprice{font-size:12px;color:var(--muted);background:#fff;padding:2px 8px;border-radius:20px;border:1px solid var(--border)}
+.ictrl{display:grid;grid-template-columns:1fr 1fr 72px;gap:8px;align-items:end}
+.ictrl.ns{grid-template-columns:1fr 72px}
+.qtyc{display:flex;align-items:center;background:#fff;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;height:44px}
+.qbtn{width:40px;height:44px;border:none;background:none;font-size:20px;cursor:pointer;color:var(--pri2);font-weight:700;flex-shrink:0;transition:.15s}
+.qbtn:active{background:var(--bg)}
+.qin{flex:1;border:none;text-align:center;font-size:16px;font-weight:600;font-family:'Prompt',sans-serif;padding:0;min-width:0}
+.qin:focus{outline:none}
+.ipdisp .pl{font-size:11px;color:var(--muted)}
+.ipdisp .pv{font-size:16px;font-weight:700;color:var(--pri);font-family:'Prompt',sans-serif;text-align:right}
+/* SUMMARY BAR */
+.sumbar{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border-radius:var(--r);padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.sumbar .lbl{font-size:12px;opacity:.85}
+.sumbar .amt{font-family:'Prompt',sans-serif;font-size:24px;font-weight:700}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.pbox{background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);padding:11px 13px}
+.pbox label{font-size:12px;margin-bottom:5px}
+.pbox input{padding:8px 10px;font-size:16px;font-weight:600}
+.pbox.bal{border-color:var(--err)}
+.pbox.bal input{color:var(--err)}
+/* BTNS */
+.btn{width:100%;padding:14px;border:none;border-radius:var(--rs);font-family:'Prompt',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;letter-spacing:.3px}
+.btn-pri{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;box-shadow:0 4px 12px rgba(26,58,92,.25)}
+.btn-pri:active{transform:scale(.98)}
+.btn-ok{background:linear-gradient(135deg,#059669,var(--ok));color:#fff;box-shadow:0 4px 12px rgba(16,185,129,.25)}
+.btn-err{background:linear-gradient(135deg,#dc2626,var(--err));color:#fff}
+.btn-out{background:#fff;color:var(--pri2);border:2px solid var(--pri2)}
+.btn-sm{width:auto;padding:7px 14px;font-size:13px;border-radius:8px}
+.btn-warn{background:linear-gradient(135deg,#d97706,var(--warn));color:#fff}
+/* ORDER LIST */
+.ocard{background:#fff;border-radius:var(--r);padding:15px;margin-bottom:10px;box-shadow:var(--shadow);border-left:4px solid var(--pri2);cursor:pointer;transition:.15s;-webkit-user-select:none;user-select:none}
+.ocard:active{transform:scale(.98)}
+.ocard.bp{border-left-color:var(--pvch)}
+.ocard.bs{border-left-color:var(--pvs)}
+.ometa{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.ocode{font-family:'Prompt',sans-serif;font-size:12px;color:var(--muted)}
+.odate{font-size:11px;color:var(--muted)}
+.oname{font-size:16px;font-weight:600;margin-bottom:3px}
+.odept{font-size:13px;color:var(--muted);margin-bottom:8px}
+.oftr{display:flex;justify-content:space-between;align-items:center}
+.otot{font-family:'Prompt',sans-serif;font-size:17px;font-weight:700;color:var(--pri)}
+.sbadge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.spaid{background:#d1fae5;color:#065f46}
+.spart{background:#fef3c7;color:#92400e}
+.sunpaid{background:#fee2e2;color:#991b1b}
+/* STATS */
+.srow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.sbox{background:#fff;border-radius:var(--rs);padding:10px;text-align:center;box-shadow:var(--shadow)}
+.sv{font-family:'Prompt',sans-serif;font-size:16px;font-weight:700;color:var(--pri);display:block}
+.sl{font-size:10px;color:var(--muted);margin-top:1px}
+/* SEARCH */
+.sbox-wrap{position:relative;margin-bottom:12px}
+.sbox-wrap input{padding-left:40px}
+.sico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:17px;color:var(--muted);pointer-events:none}
+/* FILTER */
+.frow{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
+.fbtn{flex-shrink:0;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;color:var(--muted);transition:.2s;white-space:nowrap}
+.fbtn.active{border-color:var(--pri2);color:var(--pri2);background:#eff6ff;font-weight:600}
+/* MODAL */
+.mov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:flex-end;justify-content:center}
+.mov.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:18px;width:100%;max-height:92vh;overflow-y:auto;animation:su .3s ease}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid var(--border)}
+.mtitle{font-family:'Prompt',sans-serif;font-size:16px;font-weight:600;color:var(--pri)}
+.mclose{background:var(--bg);border:none;width:30px;height:30px;border-radius:50%;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* QR */
+.dgrid{background:#f8fafc;border-radius:var(--rs);padding:13px;margin:10px 0}
+.drow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:14px}
+.drow:last-child{border-bottom:none}
+.drow .dl{color:var(--muted)}
+.drow .dv{font-weight:600;text-align:right}
+.isl{margin:8px 0}
+.isi{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:var(--muted);border-bottom:1px dashed var(--border)}
+.isi:last-child{border-bottom:none}
+/* ORDER CODE DISPLAY */
+.ocd{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border-radius:var(--rs);padding:11px 14px;text-align:center;margin-bottom:12px}
+.ocd .cl{font-size:11px;opacity:.85}
+.ocd .cv{font-family:'Prompt',sans-serif;font-size:22px;font-weight:700;letter-spacing:2px}
+/* BADGE */
+.bdg{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500}
+.bdgp{background:#ede9fe;color:var(--pvch)}
+.bdgs{background:#e0f2fe;color:var(--pvs)}
+/* TOAST */
+.toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:var(--text);color:#fff;padding:11px 20px;border-radius:30px;font-size:14px;font-weight:500;opacity:0;transition:.3s;z-index:999;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:var(--ok)}
+.toast.er{background:var(--err)}
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .ei{font-size:52px;margin-bottom:10px}
+/* PAYMENT UPDATE SECTION */
+.pay-update{background:#fffbeb;border:1.5px solid var(--warn);border-radius:var(--rs);padding:12px;margin:10px 0}
+.pay-update label{color:#92400e}
+/* EXPORT PAGE */
+.exp-btn{width:100%;padding:14px;border:none;border-radius:var(--rs);font-family:'Prompt',sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.exp-csv{background:linear-gradient(135deg,#059669,var(--ok));color:#fff;box-shadow:0 3px 10px rgba(16,185,129,.25)}
+.exp-clr{background:#fff;color:var(--err);border:2px solid var(--err)}
+/* SIZE HINT */
+.shint{font-size:11px;color:var(--muted);background:#f8fafc;border-radius:6px;padding:6px 10px;margin-bottom:10px;line-height:1.6}
+/* Scrollbar */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>🧥 ระบบสั่งซื้อเสื้อผ้า</h1>
+  <p id="hdr-sub">จัดการคำสั่งซื้อ ปวช. / ปวส. · Offline</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- ========== SCREEN: NEW ORDER ========== -->
+<div class="scr active" id="scr-order">
+
+  <div class="card">
+    <div class="card-title">📋 ข้อมูลคำสั่งซื้อ</div>
+    <div class="ocd">
+      <div class="cl">รหัสคำสั่งซื้อ</div>
+      <div class="cv" id="disp-code">ORD-...</div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-title">👤 ข้อมูลผู้สั่งซื้อ</div>
+    <div class="fg">
+      <label>ชื่อ-นามสกุล *</label>
+      <input type="text" id="f-name" placeholder="กรอกชื่อ-นามสกุล">
+    </div>
+    <div class="row2">
+      <div class="fg">
+        <label>แผนก *</label>
+        <input type="text" id="f-dept" placeholder="เช่น คอมพิวเตอร์">
+      </div>
+      <div class="fg">
+        <label>เบอร์โทร</label>
+        <input type="tel" id="f-tel" placeholder="0XX-XXX-XXXX" maxlength="12">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🎓 ระดับการศึกษา & รายการ</div>
+    <div class="ltabs">
+      <button class="ltab ap" id="tab-pvch" onclick="switchLevel('pvch')">ปวช.</button>
+      <button class="ltab" id="tab-pvs" onclick="switchLevel('pvs')">ปวส.</button>
+    </div>
+
+    <!-- PVCH -->
+    <div class="isec show" id="sec-pvch">
+      <div class="shint">⚠️ เสื้อ: Size 38-48 | กางเกง/กระโปรง Size ≤38: ราคาปกติ, Size 40+: +100-150฿</div>
+      <div id="pvch-items"></div>
+    </div>
+    <!-- PVS -->
+    <div class="isec" id="sec-pvs">
+      <div class="shint">⚠️ เสื้อ: Size 38-48 | กางเกง/กระโปรง Size ≤38: ราคาปกติ, Size 40+: +100-150฿</div>
+      <div id="pvs-items"></div>
+    </div>
+  </div>
+
+  <div class="sumbar">
+    <div>
+      <div class="lbl">รวมเงินทั้งหมด</div>
+      <div style="font-size:11px;opacity:.7" id="sum-count">ยังไม่มีรายการ</div>
+    </div>
+    <div class="amt" id="grand-total">0 ฿</div>
+  </div>
+
+  <div class="pgrid">
+    <div class="pbox">
+      <label>💵 ชำระแล้ว (฿)</label>
+      <input type="number" id="f-paid" placeholder="0" min="0" step="1" oninput="calcBalance()">
+    </div>
+    <div class="pbox bal">
+      <label>⚠️ ค้างชำระ (฿)</label>
+      <input type="number" id="f-bal" placeholder="0" readonly>
+    </div>
+  </div>
+
+  <div class="card" style="padding:13px;margin-bottom:12px">
+    <div class="fg" style="margin:0">
+      <label>📝 หมายเหตุ</label>
+      <textarea id="f-note" placeholder="บันทึกเพิ่มเติม เช่น ต้องการพิเศษ..."></textarea>
+    </div>
+  </div>
+
+  <button class="btn btn-ok" onclick="saveOrder()">✅ บันทึกคำสั่งซื้อ</button>
+  <div style="height:8px"></div>
+  <button class="btn btn-out" onclick="resetForm()">🔄 เคลียร์ฟอร์ม</button>
+</div>
+
+<!-- ========== SCREEN: ORDER LIST ========== -->
+<div class="scr" id="scr-list">
+  <div class="srow">
+    <div class="sbox"><span class="sv" id="st-total">0</span><span class="sl">รายการทั้งหมด</span></div>
+    <div class="sbox"><span class="sv" id="st-rev" style="font-size:13px">0฿</span><span class="sl">รับแล้ว</span></div>
+    <div class="sbox"><span class="sv" id="st-pend" style="font-size:13px;color:var(--err)">0฿</span><span class="sl">ค้างรับ</span></div>
+  </div>
+  <div class="sbox-wrap">
+    <span class="sico">🔍</span>
+    <input type="text" id="srch" placeholder="ค้นหาชื่อ, รหัส, แผนก..." oninput="renderList()">
+  </div>
+  <div class="frow">
+    <button class="fbtn active" onclick="setFilter('all',this)">ทั้งหมด</button>
+    <button class="fbtn" onclick="setFilter('paid',this)">ชำระแล้ว</button>
+    <button class="fbtn" onclick="setFilter('partial',this)">ค้างชำระ</button>
+    <button class="fbtn" onclick="setFilter('unpaid',this)">ยังไม่ชำระ</button>
+    <button class="fbtn" onclick="setFilter('pvch',this)">ปวช.</button>
+    <button class="fbtn" onclick="setFilter('pvs',this)">ปวส.</button>
+  </div>
+  <div id="list-container">
+    <div class="empty"><div class="ei">📦</div><p>ยังไม่มีคำสั่งซื้อ</p></div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: EXPORT ========== -->
+<div class="scr" id="scr-export">
+  <div class="card">
+    <div class="card-title">📤 Export ข้อมูล</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">ดาวน์โหลดข้อมูลคำสั่งซื้อทั้งหมดเป็นไฟล์ CSV<br>เปิดด้วย Excel ได้ทันที</p>
+    <button class="exp-btn exp-csv" onclick="exportCSV()">📊 Export ทั้งหมด (.csv)</button>
+    <button class="exp-btn exp-csv" onclick="exportCSVPaid()" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6)">💰 Export เฉพาะชำระแล้ว</button>
+    <button class="exp-btn exp-csv" onclick="exportCSVUnpaid()" style="background:linear-gradient(135deg,#b45309,#f59e0b)">⚠️ Export เฉพาะค้างชำระ</button>
+    <div style="height:8px"></div>
+    <button class="exp-btn exp-clr" onclick="clearAll()">🗑 ล้างข้อมูลทั้งหมด</button>
+  </div>
+  <div class="card">
+    <div class="card-title">📊 สรุปภาพรวม</div>
+    <div id="exp-stats" style="font-size:14px;line-height:2.2;color:var(--muted)"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="nb active" id="nb-order" onclick="switchScr('order')"><span class="ic">➕</span>สั่งซื้อ</button>
+  <button class="nb" id="nb-list" onclick="switchScr('list')"><span class="ic">📋</span>รายการ</button>
+  <button class="nb" id="nb-export" onclick="switchScr('export')"><span class="ic">📤</span>Export</button>
+</nav>
+
+<!-- MODAL: ORDER DETAIL -->
+<div class="mov" id="mod-detail">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle" id="mod-title">รายละเอียด</div>
+      <button class="mclose" onclick="closeMod()">✕</button>
+    </div>
+    <div id="mod-body"></div>
+    <div style="height:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-err btn-sm" onclick="delOrder()">🗑 ลบ</button>
+      <button class="btn btn-warn btn-sm" onclick="openPayUpdate()" style="flex:1">💰 อัปเดตการชำระ</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PAY UPDATE -->
+<div class="mov" id="mod-pay">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle">💰 อัปเดตการชำระเงิน</div>
+      <button class="mclose" onclick="closePayMod()">✕</button>
+    </div>
+    <div class="dgrid" id="pay-order-info"></div>
+    <div class="pay-update">
+      <label>จำนวนที่ชำระ (฿)</label>
+      <input type="number" id="pay-input" placeholder="0" min="0" style="margin-top:6px">
+    </div>
+    <button class="btn btn-ok" onclick="updatePayment()" style="margin-top:8px">✅ บันทึกการชำระ</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+
+// ============================================================
+// PRODUCT CONFIG
+// ============================================================
+const PROD={
+  pvch:[
+    {name:'เสื้อ Shop (ปวช.)',        base:350, stype:'shirt'},
+    {name:'เสื้อเชิ้ตขาว ชาย',         base:250, stype:'shirt'},
+    {name:'เสื้อเชิ้ตขาว หญิง',         base:220, stype:'shirt'},
+    {name:'กางเกง Shop',               base:350, stype:'pants'},
+    {name:'กระโปรง',                   base:300, stype:'skirt'},
+  ],
+  pvs:[
+    {name:'เสื้อเชิ้ตขาว ชาย (แขนยาว)',base:300, stype:'shirt'},
+    {name:'เสื้อเชิ้ตขาว หญิง (แขนยาว)',base:300,stype:'shirt'},
+    {name:'เสื้อ Shop (ปวส.)',          base:350, stype:'shirt'},
+    {name:'กางเกง Shop',               base:350, stype:'pants'},
+    {name:'กระโปรง',                   base:300, stype:'skirt'},
+  ]
+};
+const SHIRT_SIZES=['38','40','42','44','46','48'];
+const PANTS_SIZES=['26','27','28','29','30','31','32','33','34','35','36','37','38','40','42','44'];
+
+function sizeOpts(stype){
+  const sizes=stype==='shirt'?SHIRT_SIZES:PANTS_SIZES;
+  return '<option value="">- ไม่สั่ง -</option>'+sizes.map(s=>{
+    const extra=(stype!=='shirt'&&parseInt(s)>=40)?` (+${stype==='pants'?100:150}฿)`:'';
+    return `<option value="${s}">${s}${extra}</option>`;
+  }).join('');
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let curLevel='pvch';
+let totals={pvch:[0,0,0,0,0],pvs:[0,0,0,0,0]};
+let grandTotal=0;
+let curFilter='all';
+let curOrderId=null;
+let db=null;
+
+// ============================================================
+// INDEXEDDB
+// ============================================================
+function initDB(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open('ClothingOrderDB',2);
+    r.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains('orders')){
+        const s=d.createObjectStore('orders',{keyPath:'id',autoIncrement:true});
+        s.createIndex('code','code',{unique:true});
+        s.createIndex('level','level',{unique:false});
+        s.createIndex('date','date',{unique:false});
+      }
+      if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'key'});
+    };
+    r.onsuccess=e=>{db=e.target.result;res();};
+    r.onerror=()=>rej(r.error);
+  });
+}
+function dbGetAll(){return new Promise((res,rej)=>{const tx=db.transaction('orders','readonly');tx.objectStore('orders').getAll().onsuccess=e=>res(e.target.result);tx.onerror=rej;});}
+function dbAdd(data){return new Promise((res,rej)=>{const tx=db.transaction('orders','readwrite');tx.objectStore('orders').add(data).onsuccess=e=>res(e.target.result);tx.onerror=rej;});}
+function dbPut(data){return new Promise((res,rej)=>{const tx=db.transaction('orders','readwrite');tx.objectStore('orders').put(data).onsuccess=e=>res(e.target.result);tx.onerror=rej;});}
+function dbDel(id){return new Promise((res,rej)=>{const tx=db.transaction('orders','readwrite');tx.objectStore('orders').delete(id).onsuccess=res;tx.onerror=rej;});}
+// ล้าง orders + reset counter กลับเป็น 0
+function dbClear(){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(['orders','meta'],'readwrite');
+    tx.objectStore('orders').clear();
+    tx.objectStore('meta').put({key:'counter',value:0}); // reset counter ด้วย
+    tx.oncomplete=res;
+    tx.onerror=rej;
+  });
+}
+// สร้าง date prefix YY-MM-DD
+function datePrefix(){
+  const d=new Date();
+  const yy=String(d.getFullYear()).slice(-2);
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  return yy+'-'+mm+'-'+dd;
+}
+function makeCode(n){ return 'ORD-'+datePrefix()+'-'+String(n).padStart(4,'0'); }
+
+// อ่านเลขถัดไป (ไม่เพิ่ม counter) — sync กับ orders จริงเสมอ
+async function peekNextCode(){
+  const orders=await dbGetAll();
+  // หา code สูงสุดที่มีใน DB เพื่อให้ถูกต้องแม้มีการลบรายการ
+  let max=0;
+  orders.forEach(o=>{
+    const m=o.code?parseInt(o.code.split('-').pop()||'0'):0;
+    if(m>max)max=m;
+  });
+  // sync counter ให้ตรงกับ orders จริง
+  await new Promise((res,rej)=>{
+    const tx=db.transaction('meta','readwrite');
+    tx.objectStore('meta').put({key:'counter',value:max});
+    tx.oncomplete=res;
+    tx.onerror=rej;
+  });
+  return makeCode(max+1);
+}
+// เพิ่ม counter และ return code — ใช้ตอนบันทึกจริงเท่านั้น
+function consumeNextCode(){
+  return new Promise(res=>{
+    const tx=db.transaction('meta','readwrite');
+    const s=tx.objectStore('meta');
+    s.get('counter').onsuccess=e=>{
+      const n=(e.target.result?e.target.result.value:0)+1;
+      s.put({key:'counter',value:n});
+      res(makeCode(n));
+    };
+  });
+}
+
+// ============================================================
+// RENDER ITEMS
+// ============================================================
+function renderItems(level){
+  const el=document.getElementById(level+'-items');
+  el.innerHTML=PROD[level].map((p,i)=>`
+    <div class="irow" id="${level}-row-${i}">
+      <div class="ihdr">
+        <span class="iname">${i+1}. ${esc(p.name)}</span>
+        <span class="iprice">${p.base} ฿</span>
+      </div>
+      <div class="ictrl">
+        <div class="fg" style="margin:0">
+          <label style="font-size:11px">Size</label>
+          <select onchange="calcItem('${level}',${i})" id="${level}-size-${i}">${sizeOpts(p.stype)}</select>
+        </div>
+        <div class="fg" style="margin:0">
+          <label style="font-size:11px">จำนวน</label>
+          <div class="qtyc">
+            <button class="qbtn" onclick="chgQty('${level}',${i},-1)">−</button>
+            <input type="number" class="qin" id="${level}-qty-${i}" value="1" min="1" max="99" onchange="calcItem('${level}',${i})">
+            <button class="qbtn" onclick="chgQty('${level}',${i},1)">+</button>
+          </div>
+        </div>
+        <div class="ipdisp">
+          <div class="pl">รวม</div>
+          <div class="pv" id="${level}-price-${i}">-</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function chgQty(lv,i,d){
+  const inp=document.getElementById(`${lv}-qty-${i}`);
+  inp.value=Math.max(1,(parseInt(inp.value)||1)+d);
+  calcItem(lv,i);
+}
+
+function calcItem(lv,i){
+  const p=PROD[lv][i];
+  const size=document.getElementById(`${lv}-size-${i}`).value;
+  const qty=Math.max(1,parseInt(document.getElementById(`${lv}-qty-${i}`).value)||1);
+  const row=document.getElementById(`${lv}-row-${i}`);
+  const priceEl=document.getElementById(`${lv}-price-${i}`);
+  if(!size){totals[lv][i]=0;row.classList.remove('has-item');priceEl.textContent='-';calcGrand();return;}
+  let price=p.base;
+  if(p.stype!=='shirt'&&parseInt(size)>=40)price+=p.stype==='pants'?100:150;
+  const sub=price*qty;
+  totals[lv][i]=sub;
+  row.classList.add('has-item');
+  priceEl.textContent=sub.toLocaleString()+' ฿';
+  calcGrand();
+}
+
+function calcGrand(){
+  grandTotal=totals[curLevel].reduce((s,v)=>s+v,0);
+  document.getElementById('grand-total').textContent=grandTotal.toLocaleString()+' ฿';
+  const cnt=totals[curLevel].filter(v=>v>0).length;
+  document.getElementById('sum-count').textContent=cnt>0?`${cnt} รายการ`:'ยังไม่มีรายการ';
+  calcBalance();
+}
+
+function calcBalance(){
+  let paid=Math.max(0,parseFloat(document.getElementById('f-paid').value)||0);
+  if(paid>grandTotal){paid=grandTotal;document.getElementById('f-paid').value=grandTotal;}
+  const bal=Math.max(0,grandTotal-paid);
+  document.getElementById('f-bal').value=bal;
+}
+
+function switchLevel(lv){
+  curLevel=lv;
+  document.getElementById('sec-pvch').classList.toggle('show',lv==='pvch');
+  document.getElementById('sec-pvs').classList.toggle('show',lv==='pvs');
+  document.getElementById('tab-pvch').className='ltab'+(lv==='pvch'?' ap':'');
+  document.getElementById('tab-pvs').className='ltab'+(lv==='pvs'?' as':'');
+  calcGrand();
+}
+
+// ============================================================
+// SAVE ORDER
+// ============================================================
+async function saveOrder(){
+  const name=document.getElementById('f-name').value.trim();
+  const dept=document.getElementById('f-dept').value.trim();
+  const tel=document.getElementById('f-tel').value.trim();
+  const date=new Date().toISOString().split('T')[0]; // ใช้วันที่ปัจจุบันอัตโนมัติ
+  const note=document.getElementById('f-note').value.trim();
+  const paid=Math.max(0,parseFloat(document.getElementById('f-paid').value)||0);
+  if(!name){toast('กรุณากรอกชื่อ-นามสกุล','er');return;}
+  if(!dept){toast('กรุณากรอกแผนก','er');return;}
+  const items=PROD[curLevel].map((p,i)=>{
+    const size=document.getElementById(`${curLevel}-size-${i}`).value;
+    const qty=parseInt(document.getElementById(`${curLevel}-qty-${i}`).value)||1;
+    if(!size)return null;
+    let price=p.base;
+    if(p.stype!=='shirt'&&parseInt(size)>=40)price+=p.stype==='pants'?100:150;
+    return{name:p.name,size,qty,unitPrice:price,total:price*qty};
+  }).filter(Boolean);
+  if(!items.length){toast('กรุณาเลือกอย่างน้อย 1 รายการ','er');return;}
+  const gt=items.reduce((s,i)=>s+i.total,0);
+  const bal=Math.max(0,gt-paid);
+  const code=await consumeNextCode(); // แค่แสดงเลขถัดไป ไม่เพิ่ม counter
+  const order={code,name,dept,tel,date,note,level:curLevel,items,grandTotal:gt,paid,balance:bal,createdAt:Date.now()};
+  await dbAdd(order);
+  showToast('บันทึกสำเร็จ '+code,'ok');
+  showSlip(order);
+  resetForm();
+}
+
+function resetForm(){
+  document.getElementById('f-name').value='';
+  document.getElementById('f-dept').value='';
+  document.getElementById('f-tel').value='';
+  document.getElementById('f-note').value='';
+  document.getElementById('f-paid').value='';
+  document.getElementById('f-bal').value='';
+  totals={pvch:[0,0,0,0,0],pvs:[0,0,0,0,0]};
+  grandTotal=0;
+  renderItems('pvch');renderItems('pvs');
+  calcGrand();
+  peekNextCode().then(c=>document.getElementById('disp-code').textContent=c); // แค่แสดง ไม่เพิ่ม
+}
+
+// ============================================================
+// SLIP + QR MODAL
+// ============================================================
+function showSlip(order){
+  const lvl=order.level==='pvch'?'ปวช.':'ปวส.';
+  const dateStr=order.date?new Date(order.date).toLocaleDateString('th-TH'):'-';
+  const statusTxt=order.balance===0?'✅ ชำระครบ':(order.paid>0?'⚠️ ค้างชำระ':'❌ ยังไม่ชำระ');
+  const itemsHtml=order.items.map(it=>`<div class="isi"><span>${esc(it.name)} Size:${it.size} ×${it.qty}</span><span>${it.total.toLocaleString()} ฿</span></div>`).join('');
+
+  document.getElementById('mod-title').textContent='📦 '+order.code;
+  document.getElementById('mod-body').innerHTML=`
+
+    <div class="dgrid">
+      <div class="drow"><span class="dl">ชื่อ-นามสกุล</span><span class="dv">${esc(order.name)}</span></div>
+      <div class="drow"><span class="dl">แผนก</span><span class="dv">${esc(order.dept||'-')}</span></div>
+      <div class="drow"><span class="dl">เบอร์</span><span class="dv">${esc(order.tel||'-')}</span></div>
+      <div class="drow"><span class="dl">ระดับ</span><span class="dv">${lvl}</span></div>
+      <div class="drow"><span class="dl">วันที่</span><span class="dv">${dateStr}</span></div>
+    </div>
+    <div style="font-weight:600;font-size:13px;color:var(--pri);margin:10px 0 6px">รายการสั่งซื้อ:</div>
+    <div class="isl">${itemsHtml}</div>
+    <div class="dgrid">
+      <div class="drow"><span class="dl">รวมเงิน</span><span class="dv" style="color:var(--pri);font-size:17px">${order.grandTotal.toLocaleString()} ฿</span></div>
+      <div class="drow"><span class="dl">ชำระแล้ว</span><span class="dv" style="color:var(--ok)">${(order.paid||0).toLocaleString()} ฿</span></div>
+      <div class="drow"><span class="dl">ค้างชำระ</span><span class="dv" style="color:var(--err)">${(order.balance||0).toLocaleString()} ฿</span></div>
+      <div class="drow"><span class="dl">สถานะ</span><span class="dv">${statusTxt}</span></div>
+    </div>
+    ${order.note?`<div style="font-size:13px;color:var(--muted);margin-top:8px">📝 ${esc(order.note)}</div>`:''}
+    <div style="text-align:center;margin-top:12px;padding:10px;background:#f0f6ff;border-radius:8px;font-size:13px">
+      📞 ติดต่อร้าน: <strong>08-0788-5050</strong>
+    </div>
+    <div style="text-align:center;margin-top:8px;font-size:12px;color:var(--muted)">📸 Screenshot หน้านี้เก็บไว้เป็นหลักฐาน</div>
+  `;
+  curOrderId=order.id||null;
+  document.getElementById('mod-detail').classList.add('open');
+}
+
+async function showOrderDetail(id){
+  const orders=await dbGetAll();
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  curOrderId=id;
+  showSlip(o);
+}
+
+function closeMod(){document.getElementById('mod-detail').classList.remove('open');curOrderId=null;}
+document.getElementById('mod-detail').addEventListener('click',e=>{if(e.target===document.getElementById('mod-detail'))closeMod();});
+
+async function delOrder(){
+  if(!curOrderId)return;
+  if(!confirm('ลบรายการนี้หรือไม่?'))return;
+  await dbDel(curOrderId);
+  closeMod();
+  showToast('ลบรายการแล้ว','ok');
+  renderList();
+}
+
+// ============================================================
+// PAYMENT UPDATE
+// ============================================================
+function openPayUpdate(){
+  if(!curOrderId)return;
+  dbGetAll().then(orders=>{
+    const o=orders.find(x=>x.id===curOrderId);
+    if(!o)return;
+    document.getElementById('pay-order-info').innerHTML=`
+      <div class="drow"><span class="dl">รหัส</span><span class="dv">${o.code}</span></div>
+      <div class="drow"><span class="dl">ชื่อ</span><span class="dv">${esc(o.name)}</span></div>
+      <div class="drow"><span class="dl">ยอดรวม</span><span class="dv">${o.grandTotal.toLocaleString()} ฿</span></div>
+      <div class="drow"><span class="dl">ชำระแล้ว</span><span class="dv" style="color:var(--ok)">${(o.paid||0).toLocaleString()} ฿</span></div>
+      <div class="drow"><span class="dl">ค้างชำระ</span><span class="dv" style="color:var(--err)">${(o.balance||0).toLocaleString()} ฿</span></div>
+    `;
+    document.getElementById('pay-input').value=o.paid||'';
+    closeMod();
+    document.getElementById('mod-pay').classList.add('open');
+  });
+}
+function closePayMod(){document.getElementById('mod-pay').classList.remove('open');}
+document.getElementById('mod-pay').addEventListener('click',e=>{if(e.target===document.getElementById('mod-pay'))closePayMod();});
+
+async function updatePayment(){
+  if(!curOrderId)return;
+  const orders=await dbGetAll();
+  const o=orders.find(x=>x.id===curOrderId);
+  if(!o)return;
+  const paid=Math.max(0,parseFloat(document.getElementById('pay-input').value)||0);
+  if(paid<0){showToast('จำนวนต้องไม่ติดลบ','er');return;}
+  if(paid>o.grandTotal){showToast('จำนวนที่ชำระเกินยอดรวม','er');return;}
+  o.paid=paid;o.balance=Math.max(0,o.grandTotal-paid);
+  await dbPut(o);
+  closePayMod();
+  showToast('อัปเดตการชำระแล้ว','ok');
+  renderList();
+}
+
+// ============================================================
+// ORDER LIST
+// ============================================================
+async function renderList(){
+  const orders=await dbGetAll();
+  const q=(document.getElementById('srch').value||'').toLowerCase();
+  let rev=0,pend=0;
+  orders.forEach(o=>{rev+=o.paid||0;pend+=o.balance||0;});
+  document.getElementById('st-total').textContent=orders.length;
+  document.getElementById('st-rev').textContent=rev.toLocaleString()+'฿';
+  document.getElementById('st-pend').textContent=pend.toLocaleString()+'฿';
+  let list=orders.filter(o=>{
+    if(q&&!o.name.toLowerCase().includes(q)&&!o.code.toLowerCase().includes(q)&&!(o.dept||'').toLowerCase().includes(q))return false;
+    if(curFilter==='paid')return o.balance===0;
+    if(curFilter==='partial')return o.paid>0&&o.balance>0;
+    if(curFilter==='unpaid')return(o.paid||0)===0;
+    if(curFilter==='pvch')return o.level==='pvch';
+    if(curFilter==='pvs')return o.level==='pvs';
+    return true;
+  }).reverse();
+  const c=document.getElementById('list-container');
+  if(!list.length){c.innerHTML='<div class="empty"><div class="ei">📭</div><p>ไม่พบรายการ</p></div>';return;}
+  c.innerHTML=list.map(o=>{
+    const sc=o.balance===0?'spaid':(o.paid>0?'spart':'sunpaid');
+    const st=o.balance===0?'✅ ชำระแล้ว':(o.paid>0?'⚠️ ค้างชำระ':'❌ ยังไม่ชำระ');
+    const bc=o.level==='pvch'?'bp':'bs';
+    const lb=o.level==='pvch'?'<span class="bdg bdgp">ปวช.</span>':'<span class="bdg bdgs">ปวส.</span>';
+    const dt=o.date?new Date(o.date).toLocaleDateString('th-TH'):'-';
+    return`<div class="ocard ${bc}" onclick="showOrderDetail(${o.id})">
+      <div class="ometa"><span class="ocode">${o.code} ${lb}</span><span class="odate">${dt}</span></div>
+      <div class="oname">${esc(o.name)}</div>
+      <div class="odept">📍 ${esc(o.dept||'')} ${o.tel?'| 📞 '+esc(o.tel):''}</div>
+      <div class="oftr"><span class="otot">${o.grandTotal.toLocaleString()} ฿</span><span class="sbadge ${sc}">${st}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(f,btn){
+  curFilter=f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+// ============================================================
+// EXPORT CSV
+// ============================================================
+async function doExport(orders,suffix=''){
+  if(!orders.length){showToast('ไม่มีข้อมูล','er');return;}
+  const BOM='\uFEFF';
+  const head='รหัส,ชื่อ-นามสกุล,แผนก,เบอร์,ระดับ,รายการ,ยอดรวม,ชำระแล้ว,ค้างชำระ,สถานะ,วันที่,หมายเหตุ\n';
+  const rows=orders.map(o=>[
+    o.code,
+    '"'+o.name+'"',
+    '"'+(o.dept||'')+'"',
+    o.tel||'',
+    o.level==='pvch'?'ปวช.':'ปวส.',
+    '"'+o.items.map(i=>`${i.name} Size:${i.size} x${i.qty} = ${i.total}฿`).join(' | ')+'"',
+    o.grandTotal,
+    o.paid||0,
+    o.balance||0,
+    o.balance===0?'ชำระแล้ว':(o.paid>0?'ค้างชำระ':'ยังไม่ชำระ'),
+    o.date||'',
+    '"'+(o.note||'')+'"'
+  ].join(',')).join('\n');
+  const blob=new Blob([BOM+head+rows],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`orders${suffix}_${new Date().toLocaleDateString('th').replace(/\//g,'-')}.csv`;
+  a.click();
+  showToast('Export สำเร็จ','ok');
+}
+async function exportCSV(){const o=await dbGetAll();doExport(o);}
+async function exportCSVPaid(){const o=(await dbGetAll()).filter(x=>x.balance===0);doExport(o,'_paid');}
+async function exportCSVUnpaid(){const o=(await dbGetAll()).filter(x=>(x.paid||0)<x.grandTotal);doExport(o,'_unpaid');}
+async function clearAll(){
+  if(!confirm('ล้างข้อมูลทั้งหมด? ไม่สามารถกู้คืนได้'))return;
+  await dbClear(); // reset counter เป็น 0 ในตัวแล้ว
+  peekNextCode().then(c=>document.getElementById('disp-code').textContent=c);
+  showToast('ล้างข้อมูลแล้ว');
+  renderExpStats();
+}
+
+async function renderExpStats(){
+  const o=await dbGetAll();
+  const paid=o.filter(x=>x.balance===0).length;
+  const unp=o.filter(x=>(x.paid||0)===0).length;
+  const rev=o.reduce((s,x)=>s+(x.paid||0),0);
+  const pend=o.reduce((s,x)=>s+(x.balance||0),0);
+  document.getElementById('exp-stats').innerHTML=
+    `รายการทั้งหมด: <b style="color:var(--text)">${o.length} รายการ</b><br>`+
+    `ชำระครบ: <b style="color:var(--ok)">${paid} รายการ</b><br>`+
+    `ยังไม่ชำระ: <b style="color:var(--err)">${unp} รายการ</b><br>`+
+    `รับเงินแล้ว: <b style="color:var(--ok)">${rev.toLocaleString()} ฿</b><br>`+
+    `ค้างรับ: <b style="color:var(--err)">${pend.toLocaleString()} ฿</b><br>`+
+    `ข้อมูลเก็บใน: <b style="color:var(--text)">IndexedDB (Offline)</b>`;
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function switchScr(name){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('scr-'+name).classList.add('active');
+  document.getElementById('nb-'+name).classList.add('active');
+  if(name==='list')renderList();
+  if(name==='export')renderExpStats();
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function esc(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');setTimeout(()=>t.className='toast',2800);}
+// alias for legacy compat
+function toast(m,t){showToast(m,t);}
+
+// ============================================================
+// INIT
+// ============================================================
+async function init(){
+  try{
+    await initDB();
+    renderItems('pvch');
+    renderItems('pvs');
+    const code=await peekNextCode(); // แค่แสดงเลขถัดไป ไม่เพิ่ม counter
+    document.getElementById('disp-code').textContent=code;
+    showToast('ระบบพร้อมใช้งาน ✓','ok');
+  }catch(e){
+    showToast('เริ่มต้นระบบล้มเหลว: '+e.message,'er');
+  }
+}
+init();
+</script>
+</body>
+</html>
