@@ -161,25 +161,25 @@ textarea{resize:none;min-height:70px}
 </style>
 </head>
 <body>
-
+ 
 <div class="hdr">
   <h1>🧥 ระบบสั่งซื้อเสื้อผ้า</h1>
   <p id="hdr-sub">จัดการคำสั่งซื้อ ปวช. / ปวส. · Offline</p>
 </div>
 <div class="toast" id="toast"></div>
-
+ 
 <!-- ========== SCREEN: NEW ORDER ========== -->
 <div class="scr active" id="scr-order">
-
+ 
   <div class="card">
     <div class="card-title">📋 ข้อมูลคำสั่งซื้อ</div>
     <div class="ocd">
       <div class="cl">รหัสคำสั่งซื้อ</div>
       <div class="cv" id="disp-code">ORD-...</div>
     </div>
-
+ 
   </div>
-
+ 
   <div class="card">
     <div class="card-title">👤 ข้อมูลผู้สั่งซื้อ</div>
     <div class="fg">
@@ -197,14 +197,14 @@ textarea{resize:none;min-height:70px}
       </div>
     </div>
   </div>
-
+ 
   <div class="card">
     <div class="card-title">🎓 ระดับการศึกษา & รายการ</div>
     <div class="ltabs">
       <button class="ltab ap" id="tab-pvch" onclick="switchLevel('pvch')">ปวช.</button>
       <button class="ltab" id="tab-pvs" onclick="switchLevel('pvs')">ปวส.</button>
     </div>
-
+ 
     <!-- PVCH -->
     <div class="isec show" id="sec-pvch">
       <div class="shint">⚠️ เสื้อ: Size 38-48 | กางเกง/กระโปรง Size ≤38: ราคาปกติ, Size 40+: +100-150฿</div>
@@ -216,7 +216,7 @@ textarea{resize:none;min-height:70px}
       <div id="pvs-items"></div>
     </div>
   </div>
-
+ 
   <div class="sumbar">
     <div>
       <div class="lbl">รวมเงินทั้งหมด</div>
@@ -224,7 +224,7 @@ textarea{resize:none;min-height:70px}
     </div>
     <div class="amt" id="grand-total">0 ฿</div>
   </div>
-
+ 
   <div class="pgrid">
     <div class="pbox">
       <label>💵 ชำระแล้ว (฿)</label>
@@ -235,19 +235,19 @@ textarea{resize:none;min-height:70px}
       <input type="number" id="f-bal" placeholder="0" readonly>
     </div>
   </div>
-
+ 
   <div class="card" style="padding:13px;margin-bottom:12px">
     <div class="fg" style="margin:0">
       <label>📝 หมายเหตุ</label>
       <textarea id="f-note" placeholder="บันทึกเพิ่มเติม เช่น ต้องการพิเศษ..."></textarea>
     </div>
   </div>
-
+ 
   <button class="btn btn-ok" onclick="saveOrder()">✅ บันทึกคำสั่งซื้อ</button>
   <div style="height:8px"></div>
   <button class="btn btn-out" onclick="resetForm()">🔄 เคลียร์ฟอร์ม</button>
 </div>
-
+ 
 <!-- ========== SCREEN: ORDER LIST ========== -->
 <div class="scr" id="scr-list">
   <div class="srow">
@@ -271,7 +271,7 @@ textarea{resize:none;min-height:70px}
     <div class="empty"><div class="ei">📦</div><p>ยังไม่มีคำสั่งซื้อ</p></div>
   </div>
 </div>
-
+ 
 <!-- ========== SCREEN: EXPORT ========== -->
 <div class="scr" id="scr-export">
   <div class="card">
@@ -288,14 +288,14 @@ textarea{resize:none;min-height:70px}
     <div id="exp-stats" style="font-size:14px;line-height:2.2;color:var(--muted)"></div>
   </div>
 </div>
-
+ 
 <!-- BOTTOM NAV -->
 <nav class="bnav">
   <button class="nb active" id="nb-order" onclick="switchScr('order')"><span class="ic">➕</span>สั่งซื้อ</button>
   <button class="nb" id="nb-list" onclick="switchScr('list')"><span class="ic">📋</span>รายการ</button>
   <button class="nb" id="nb-export" onclick="switchScr('export')"><span class="ic">📤</span>Export</button>
 </nav>
-
+ 
 <!-- MODAL: ORDER DETAIL -->
 <div class="mov" id="mod-detail">
   <div class="modal">
@@ -311,7 +311,7 @@ textarea{resize:none;min-height:70px}
     </div>
   </div>
 </div>
-
+ 
 <!-- MODAL: PAY UPDATE -->
 <div class="mov" id="mod-pay">
   <div class="modal">
@@ -327,32 +327,32 @@ textarea{resize:none;min-height:70px}
     <button class="btn btn-ok" onclick="updatePayment()" style="margin-top:8px">✅ บันทึกการชำระ</button>
   </div>
 </div>
-
+ 
 <script>
 // ============================================================
-
+ 
 // ============================================================
 // PRODUCT CONFIG
 // ============================================================
 const PROD={
   pvch:[
-    {name:'เสื้อ Shop (ปวช.)',        base:350, stype:'shirt'},
     {name:'เสื้อเชิ้ตขาว ชาย',         base:250, stype:'shirt'},
     {name:'เสื้อเชิ้ตขาว หญิง',         base:220, stype:'shirt'},
+    {name:'เสื้อ Shop (ปวช.)',          base:350, stype:'shirt'},
     {name:'กางเกง Shop',               base:350, stype:'pants'},
     {name:'กระโปรง',                   base:300, stype:'skirt'},
   ],
   pvs:[
-    {name:'เสื้อเชิ้ตขาว ชาย (แขนยาว)',base:300, stype:'shirt'},
-    {name:'เสื้อเชิ้ตขาว หญิง (แขนยาว)',base:300,stype:'shirt'},
-    {name:'เสื้อ Shop (ปวส.)',          base:350, stype:'shirt'},
-    {name:'กางเกง Shop',               base:350, stype:'pants'},
-    {name:'กระโปรง',                   base:300, stype:'skirt'},
+    {name:'เสื้อเชิ้ตขาว ชาย (แขนยาว)', base:300, stype:'shirt'},
+    {name:'เสื้อเชิ้ตขาว หญิง (แขนยาว)',base:300, stype:'shirt'},
+    {name:'เสื้อ Shop (ปวส.)',           base:350, stype:'shirt'},
+    {name:'กางเกง Shop',                base:350, stype:'pants'},
+    {name:'กระโปรง',                    base:300, stype:'skirt'},
   ]
 };
 const SHIRT_SIZES=['38','40','42','44','46','48'];
 const PANTS_SIZES=['26','27','28','29','30','31','32','33','34','35','36','37','38','40','42','44'];
-
+ 
 function sizeOpts(stype){
   const sizes=stype==='shirt'?SHIRT_SIZES:PANTS_SIZES;
   return '<option value="">- ไม่สั่ง -</option>'+sizes.map(s=>{
@@ -360,7 +360,7 @@ function sizeOpts(stype){
     return `<option value="${s}">${s}${extra}</option>`;
   }).join('');
 }
-
+ 
 // ============================================================
 // STATE
 // ============================================================
@@ -370,7 +370,7 @@ let grandTotal=0;
 let curFilter='all';
 let curOrderId=null;
 let db=null;
-
+ 
 // ============================================================
 // INDEXEDDB
 // ============================================================
@@ -414,7 +414,7 @@ function datePrefix(){
   return yy+'-'+mm+'-'+dd;
 }
 function makeCode(n){ return 'ORD-'+datePrefix()+'-'+String(n).padStart(4,'0'); }
-
+ 
 // อ่านเลขถัดไป (ไม่เพิ่ม counter) — sync กับ orders จริงเสมอ
 async function peekNextCode(){
   const orders=await dbGetAll();
@@ -445,7 +445,7 @@ function consumeNextCode(){
     };
   });
 }
-
+ 
 // ============================================================
 // RENDER ITEMS
 // ============================================================
@@ -477,13 +477,13 @@ function renderItems(level){
       </div>
     </div>`).join('');
 }
-
+ 
 function chgQty(lv,i,d){
   const inp=document.getElementById(`${lv}-qty-${i}`);
   inp.value=Math.max(1,(parseInt(inp.value)||1)+d);
   calcItem(lv,i);
 }
-
+ 
 function calcItem(lv,i){
   const p=PROD[lv][i];
   const size=document.getElementById(`${lv}-size-${i}`).value;
@@ -499,7 +499,7 @@ function calcItem(lv,i){
   priceEl.textContent=sub.toLocaleString()+' ฿';
   calcGrand();
 }
-
+ 
 function calcGrand(){
   grandTotal=totals[curLevel].reduce((s,v)=>s+v,0);
   document.getElementById('grand-total').textContent=grandTotal.toLocaleString()+' ฿';
@@ -507,14 +507,14 @@ function calcGrand(){
   document.getElementById('sum-count').textContent=cnt>0?`${cnt} รายการ`:'ยังไม่มีรายการ';
   calcBalance();
 }
-
+ 
 function calcBalance(){
   let paid=Math.max(0,parseFloat(document.getElementById('f-paid').value)||0);
   if(paid>grandTotal){paid=grandTotal;document.getElementById('f-paid').value=grandTotal;}
   const bal=Math.max(0,grandTotal-paid);
   document.getElementById('f-bal').value=bal;
 }
-
+ 
 function switchLevel(lv){
   curLevel=lv;
   document.getElementById('sec-pvch').classList.toggle('show',lv==='pvch');
@@ -523,7 +523,7 @@ function switchLevel(lv){
   document.getElementById('tab-pvs').className='ltab'+(lv==='pvs'?' as':'');
   calcGrand();
 }
-
+ 
 // ============================================================
 // SAVE ORDER
 // ============================================================
@@ -554,7 +554,7 @@ async function saveOrder(){
   showSlip(order);
   resetForm();
 }
-
+ 
 function resetForm(){
   document.getElementById('f-name').value='';
   document.getElementById('f-dept').value='';
@@ -568,7 +568,7 @@ function resetForm(){
   calcGrand();
   peekNextCode().then(c=>document.getElementById('disp-code').textContent=c); // แค่แสดง ไม่เพิ่ม
 }
-
+ 
 // ============================================================
 // SLIP + QR MODAL
 // ============================================================
@@ -577,10 +577,10 @@ function showSlip(order){
   const dateStr=order.date?new Date(order.date).toLocaleDateString('th-TH'):'-';
   const statusTxt=order.balance===0?'✅ ชำระครบ':(order.paid>0?'⚠️ ค้างชำระ':'❌ ยังไม่ชำระ');
   const itemsHtml=order.items.map(it=>`<div class="isi"><span>${esc(it.name)} Size:${it.size} ×${it.qty}</span><span>${it.total.toLocaleString()} ฿</span></div>`).join('');
-
+ 
   document.getElementById('mod-title').textContent='📦 '+order.code;
   document.getElementById('mod-body').innerHTML=`
-
+ 
     <div class="dgrid">
       <div class="drow"><span class="dl">ชื่อ-นามสกุล</span><span class="dv">${esc(order.name)}</span></div>
       <div class="drow"><span class="dl">แผนก</span><span class="dv">${esc(order.dept||'-')}</span></div>
@@ -605,7 +605,7 @@ function showSlip(order){
   curOrderId=order.id||null;
   document.getElementById('mod-detail').classList.add('open');
 }
-
+ 
 async function showOrderDetail(id){
   const orders=await dbGetAll();
   const o=orders.find(x=>x.id===id);
@@ -613,10 +613,10 @@ async function showOrderDetail(id){
   curOrderId=id;
   showSlip(o);
 }
-
+ 
 function closeMod(){document.getElementById('mod-detail').classList.remove('open');curOrderId=null;}
 document.getElementById('mod-detail').addEventListener('click',e=>{if(e.target===document.getElementById('mod-detail'))closeMod();});
-
+ 
 async function delOrder(){
   if(!curOrderId)return;
   if(!confirm('ลบรายการนี้หรือไม่?'))return;
@@ -625,7 +625,7 @@ async function delOrder(){
   showToast('ลบรายการแล้ว','ok');
   renderList();
 }
-
+ 
 // ============================================================
 // PAYMENT UPDATE
 // ============================================================
@@ -648,7 +648,7 @@ function openPayUpdate(){
 }
 function closePayMod(){document.getElementById('mod-pay').classList.remove('open');}
 document.getElementById('mod-pay').addEventListener('click',e=>{if(e.target===document.getElementById('mod-pay'))closePayMod();});
-
+ 
 async function updatePayment(){
   if(!curOrderId)return;
   const orders=await dbGetAll();
@@ -663,7 +663,7 @@ async function updatePayment(){
   showToast('อัปเดตการชำระแล้ว','ok');
   renderList();
 }
-
+ 
 // ============================================================
 // ORDER LIST
 // ============================================================
@@ -700,14 +700,14 @@ async function renderList(){
     </div>`;
   }).join('');
 }
-
+ 
 function setFilter(f,btn){
   curFilter=f;
   document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderList();
 }
-
+ 
 // ============================================================
 // EXPORT CSV
 // ============================================================
@@ -746,7 +746,7 @@ async function clearAll(){
   showToast('ล้างข้อมูลแล้ว');
   renderExpStats();
 }
-
+ 
 async function renderExpStats(){
   const o=await dbGetAll();
   const paid=o.filter(x=>x.balance===0).length;
@@ -761,7 +761,7 @@ async function renderExpStats(){
     `ค้างรับ: <b style="color:var(--err)">${pend.toLocaleString()} ฿</b><br>`+
     `ข้อมูลเก็บใน: <b style="color:var(--text)">IndexedDB (Offline)</b>`;
 }
-
+ 
 // ============================================================
 // NAVIGATION
 // ============================================================
@@ -773,7 +773,7 @@ function switchScr(name){
   if(name==='list')renderList();
   if(name==='export')renderExpStats();
 }
-
+ 
 // ============================================================
 // UTILS
 // ============================================================
@@ -781,7 +781,7 @@ function esc(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');setTimeout(()=>t.className='toast',2800);}
 // alias for legacy compat
 function toast(m,t){showToast(m,t);}
-
+ 
 // ============================================================
 // INIT
 // ============================================================
